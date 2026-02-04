@@ -20,13 +20,13 @@ async function fetchLeads() {
     .from('leads')
     .select(`
       id,
-      submitted_at,
+      created_at,
       data,
       forms (
         title
       )
     `)
-    .order('submitted_at', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching leads:', error)
@@ -75,7 +75,7 @@ onMounted(() => {
           </TableRow>
           <TableRow v-else v-for="lead in leads" :key="lead.id">
             <TableCell class="font-medium">{{ lead.forms?.title || 'Unknown Form' }}</TableCell>
-            <TableCell>{{ new Date(lead.submitted_at).toLocaleString() }}</TableCell>
+            <TableCell>{{ new Date(lead.created_at).toLocaleString() }}</TableCell>
             <TableCell>
               <pre class="text-xs">{{ JSON.stringify(lead.data, null, 2) }}</pre>
             </TableCell>

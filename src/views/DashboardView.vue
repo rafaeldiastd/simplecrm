@@ -23,7 +23,7 @@ onMounted(async () => {
   const { data, error: dataError } = await supabase
     .from('leads')
     .select('*, forms(title)')
-    .order('submitted_at', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(5)
 
   if (!dataError) {
@@ -60,7 +60,7 @@ onMounted(async () => {
           <CardContent class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div class="font-medium">{{ lead.forms?.title || 'Unknown Form' }}</div>
-              <div class="text-sm text-muted-foreground">{{ new Date(lead.submitted_at).toLocaleString() }}</div>
+              <div class="text-sm text-muted-foreground">{{ new Date(lead.created_at).toLocaleString() }}</div>
             </div>
             <div class="text-sm bg-muted p-2 rounded max-w-md overflow-hidden truncate">
               {{ JSON.stringify(lead.data) }}
