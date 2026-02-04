@@ -15,29 +15,22 @@ import { LayoutDashboard, Users, FilePlus } from 'lucide-vue-next'
       </div>
       <div class="flex-1 overflow-auto py-2">
         <nav class="grid items-start px-2 text-sm font-medium lg:px-4">
-          <RouterLink
-            to="/"
-            class="flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary"
-            active-class="bg-muted text-primary"
-          >
+          <RouterLink to="/" class="flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary"
+            active-class="bg-muted text-primary">
             <LayoutDashboard class="h-4 w-4" />
-            Dashboard
+            Painel
           </RouterLink>
-          <RouterLink
-            to="/leads"
+          <RouterLink to="/forms"
             class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-            active-class="bg-muted text-primary"
-          >
+            active-class="bg-muted text-primary">
+            <FilePlus class="h-4 w-4" />
+            Formulários
+          </RouterLink>
+          <RouterLink to="/leads"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            active-class="bg-muted text-primary">
             <Users class="h-4 w-4" />
             Leads
-          </RouterLink>
-          <RouterLink
-            to="/builder"
-            class="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-            active-class="bg-muted text-primary"
-          >
-            <FilePlus class="h-4 w-4" />
-            Form Builder
           </RouterLink>
         </nav>
       </div>

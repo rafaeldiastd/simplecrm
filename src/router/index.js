@@ -16,7 +16,12 @@ const routes = [
                 component: () => import('@/views/LeadsView.vue'),
             },
             {
-                path: 'builder',
+                path: 'forms',
+                name: 'forms',
+                component: () => import('@/views/MyFormsView.vue'),
+            },
+            {
+                path: 'builder/:id?',
                 name: 'builder',
                 component: () => import('@/views/FormBuilderView.vue'),
             },
