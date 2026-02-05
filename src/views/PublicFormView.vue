@@ -103,6 +103,20 @@ onMounted(async () => {
     }
   }
 
+  // Setup ResizeObserver to handle dynamic height changes
+  const resizeObserver = new ResizeObserver(() => {
+    notifyHeight()
+  })
+  resizeObserver.observe(document.body)
+
+  // Notify initial height
+  notifyHeight()
+
+  // Apply Background to body if full page
+  if (data.style && data.style.backgroundColor) {
+    document.body.style.backgroundColor = data.style.backgroundColor
+  }
+
   // Capture Metadata
   try {
     metadata.value.userAgent = navigator.userAgent
@@ -119,10 +133,20 @@ onMounted(async () => {
 })
 
 const notifyHeight = () => {
-  setTimeout(() => {
-    const height = document.body.scrollHeight
+  // Use a slight delay or requestAnimationFrame to ensure rendering is complete
+  requestAnimationFrame(() => {
+    // We use scrollHeight of the documentElement (html) or body to capture full content
+    // But since body has min-h-screen, we might want to measure the container if we want 'fit content'.
+    // If we assume the iframe should just be as tall as the content...
+
+    // Better approach: Calculate the max of body scrollHeight or offsetHeight
+    const height = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight
+    )
     window.parent.postMessage({ type: 'crm-resize', height }, '*')
-  }, 100)
+  })
 }
 
 const nextStep = () => {
@@ -182,7 +206,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen p-4 flex items-center justify-center custom-root" :style="rootStyle">
+  <div class="p-4 flex items-center justify-center custom-root" :style="rootStyle">
     <div v-if="loading" class="text-center p-4">Carregando...</div>
     <div v-else-if="error" class="text-center text-red-500 font-bold p-4">
       {{ error }}
