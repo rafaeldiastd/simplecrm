@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Smart Embed</title>
+    <!-- 1. Custom Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            /* 2. Custom Body Styles */
+            font-family: 'Lobster', cursive;
+            background-color: #f0fdf4;
+            /* Light Green */
+            color: #166534;
+            /* Dark Green */
+            padding: 20px;
+        }
+
+        /* 3. Custom Button Style to be detected */
+        .btn-primary {
+            background-color: #9333ea;
+            /* Purple */
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-family: sans-serif;
+            /* Different font for buttons */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Site do Cliente (Simulação)</h1>
+    <p>O formulário abaixo deve respeitar <strong>exatamente</strong> o estilo definido no Criador de Formulários
+        (Cores, Fontes, Bordas), ignorando o CSS deste site.</p>
+    <ul>
+        <li>A fonte do site é <em>Lobster</em>, mas o formulário deve usar a fonte escolhida no builder.</li>
+        <li>O botão do site é roxo, mas o formulário deve ter a cor configurada.</li>
+    </ul>
+
+    <!-- Button to be detected by the script -->
+    <button class="btn-primary">Botão Exemplo do Site (Roxo)</button>
+    <hr style="margin: 20px 0;">
+
+    <!-- 4. Embed Code -->
+    <!-- Using a random UUID. It will show error, but the error should have Lobster font! -->
+    <div style="max-width: 600px; margin: 0 auto; border: 1px dashed #ccc; padding: 10px;">
+        <h3>Area do Embed:</h3>
+        <script src="http://localhost:5173/embed.js" data-form-id="c6712980-c739-4013-aa34-24f9229e452f" async></script>
+    </div>
+
+</body>
+
+</html>
