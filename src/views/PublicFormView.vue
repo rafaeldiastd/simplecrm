@@ -115,6 +115,9 @@ onMounted(async () => {
   // Apply Background to body if full page
   if (data.style && data.style.backgroundColor) {
     document.body.style.backgroundColor = data.style.backgroundColor
+  } else {
+    // Default to white to avoid transparency/inheritance look
+    document.body.style.backgroundColor = '#ffffff'
   }
 
   // Capture Metadata

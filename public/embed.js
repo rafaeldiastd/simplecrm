@@ -16,8 +16,7 @@
     iframe.style.overflow = 'hidden';
     iframe.style.minHeight = '300px';
     iframe.setAttribute('scrolling', 'no');
-    // Allow transparency
-    iframe.allowTransparency = "true";
+    iframe.setAttribute('scrolling', 'no');
 
     // Inject iframe
     script.parentNode.insertBefore(iframe, script.nextSibling);
