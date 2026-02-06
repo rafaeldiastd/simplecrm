@@ -25,6 +25,11 @@ const routes = [
                 name: 'builder',
                 component: () => import('@/views/FormBuilderView.vue'),
             },
+            {
+                path: 'settings',
+                name: 'settings',
+                component: () => import('@/views/SettingsView.vue'),
+            },
         ],
     },
     {

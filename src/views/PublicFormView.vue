@@ -32,15 +32,39 @@ const steps = ref([]) // Array of Arrays of fields
 const rootStyle = computed(() => {
   if (!form.value || !form.value.style) return {}
   const s = form.value.style
+
+  // Map shadow
+  const shadows = {
+    'none': 'none',
+    'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+    'xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+  }
+
   return {
     '--primary-color': s.primaryColor,
     '--bg-color': s.backgroundColor,
     '--text-color': s.textColor,
-    '--radius': `${s.borderRadius || 0.5}rem`,
-    '--btn-radius': `${s.btnRadius || 4}px`,
+    '--radius': `${s.borderRadius}rem`,
+    '--btn-radius': `${s.btnRadius}px`,
+    '--input-radius': `${s.inputRadius || 0.5}rem`,
+    '--shadow': shadows[s.shadowStrength || 'lg'],
+    '--border-width': `${s.borderWidth || 0}px`,
+    '--border-color': s.borderColor || '#e2e8f0',
+    '--card-padding': `${s.cardPadding || 2}rem`,
+    '--title-color': s.titleColor || s.textColor,
+    '--label-color': s.labelColor || s.textColor,
     'font-family': s.fontFamily,
     'color': s.textColor
   }
+})
+
+// Input Style Helper
+const inputStyleMode = computed(() => form.value?.style?.inputStyle || 'solid')
+const btnAlignClass = computed(() => {
+  const align = form.value?.style?.buttonAlign || 'block'
+  return `btn-align-${align}`
 })
 
 onMounted(async () => {
@@ -68,7 +92,12 @@ onMounted(async () => {
         if (currentChunk.length > 0) steps.value.push(currentChunk)
         currentChunk = []
       } else {
-        formData.value[field.label] = ''
+        // Initialize based on type
+        if (field.type === 'checkbox') {
+          formData.value[field.label] = []
+        } else {
+          formData.value[field.label] = ''
+        }
         currentChunk.push(field)
       }
     })
@@ -92,6 +121,12 @@ onMounted(async () => {
       'Open Sans': 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap',
       'Lato': 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap',
       'Montserrat': 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap',
+      'Poppins': 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap',
+      'Oswald': 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap',
+      'Merriweather': 'https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap',
+      'Playfair Display': 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap',
+      'Inconsolata': 'https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap',
+      'Dancing Script': 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&display=swap',
       'Lobster': 'https://fonts.googleapis.com/css2?family=Lobster&display=swap',
     }
     const url = fontMap[data.style.fontFamily]
@@ -126,7 +161,8 @@ onMounted(async () => {
     const response = await fetch('https://ipapi.co/json/')
     if (response.ok) {
       const geoData = await response.json()
-      metadata.value.ip = geoData.ip
+      // Privacy: Do not collect IP
+      // metadata.value.ip = geoData.ip 
       metadata.value.city = geoData.city
       metadata.value.region = geoData.region
       metadata.value.country = geoData.country_name
@@ -230,14 +266,20 @@ const handleSubmit = async () => {
     </div>
 
     <!-- Form -->
-    <div v-else class="w-full max-w-xl mx-auto custom-card shadow-xl overflow-hidden">
+    <div v-else class="w-full max-w-xl mx-auto custom-card overflow-hidden">
       <!-- Header -->
-      <div class="p-6 md:p-8 space-y-2 border-b border-black/5" v-if="currentStep === 0 || !form.settings?.isMultiStep">
-        <h1 class="text-2xl font-bold font-custom">{{ form.title }}</h1>
-        <p class="opacity-70 text-sm font-custom">{{ form.description }}</p>
+      <div class="space-y-2 mb-6" v-if="(form.settings?.showTitle !== false)">
+        <h1 class="font-bold font-custom" :style="{ color: 'var(--title-color)' }" :class="{
+          'text-sm': form.style?.titleSize === 'sm',
+          'text-base': form.style?.titleSize === 'md',
+          'text-lg': form.style?.titleSize === 'lg',
+          'text-xl': form.style?.titleSize === 'xl' || !form.style?.titleSize,
+          'text-2xl': form.style?.titleSize === '2xl',
+        }">{{ form.title }}</h1>
+        <p class="opacity-70 text-sm font-custom" v-if="form.description">{{ form.description }}</p>
       </div>
 
-      <div class="p-6 md:p-8">
+      <div class="p-0">
         <form @submit.prevent="handleSubmit" class="space-y-6">
 
           <div v-if="form.settings?.isMultiStep" class="mb-6">
@@ -255,42 +297,76 @@ const handleSubmit = async () => {
           <transition name="fade" mode="out-in">
             <div :key="currentStep" class="space-y-4">
               <div v-for="(field, index) in steps[currentStep]" :key="index" class="space-y-1.5">
-                <Label :for="`field-${index}`" class="font-custom">
+                <Label :for="`field-${index}`" class="font-custom" :style="{ color: 'var(--label-color)' }">
                   {{ field.label }}
                   <span v-if="field.required" class="text-red-500">*</span>
                 </Label>
 
+                <!-- Dynamic Rendering based on Type -->
                 <template v-if="field.type === 'textarea'">
                   <textarea :id="`field-${index}`" v-model="formData[field.label]"
-                    class="custom-input flex min-h-[80px] w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    :placeholder="field.placeholder" :required="field.required"></textarea>
+                    class="custom-input flex min-h-[80px] w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 bg-transparent"
+                    :data-style="inputStyleMode" :placeholder="field.placeholder" :required="field.required"></textarea>
                 </template>
+
                 <template v-else-if="field.type === 'select'">
                   <div class="relative">
                     <select :id="`field-${index}`" v-model="formData[field.label]" :required="field.required"
-                      class="custom-input flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none bg-transparent">
+                      class="custom-input flex h-10 w-full px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none bg-transparent"
+                      :data-style="inputStyleMode">
                       <option value="" disabled selected>Selecione...</option>
                       <option v-for="(opt, oIdx) in field.options" :key="oIdx" :value="opt.value">{{ opt.label }}
                       </option>
                     </select>
-                    <!-- Arrow Icon -->
                     <div class="absolute right-3 top-3 pointer-events-none opacity-50">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m6 9 6 6 6-6" />
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="m6 9 6 6 6-6"></path>
                       </svg>
                     </div>
                   </div>
                 </template>
+
+                <template v-else-if="field.type === 'radio'">
+                  <div class="space-y-2 pt-1">
+                    <div v-for="(opt, oIdx) in field.options" :key="oIdx" class="flex items-center gap-2">
+                      <input type="radio" :id="`field-${index}-${oIdx}`" :name="`field-${index}`" :value="opt.value"
+                        v-model="formData[field.label]" :required="field.required"
+                        class="text-primary focus:ring-primary h-4 w-4 border-gray-300"
+                        :style="{ accentColor: 'var(--primary-color)' }" />
+                      <label :for="`field-${index}-${oIdx}`" class="text-sm opacity-90 cursor-pointer"
+                        :style="{ color: 'var(--text-color)' }">{{ opt.label }}</label>
+                    </div>
+                  </div>
+                </template>
+
+                <template v-else-if="field.type === 'checkbox'">
+                  <!-- Checkbox usually handles multiple values (array), but keeping simple string/boolean mapping or array for now. 
+                         For simplicity, let's treat single checkbox as boolean? No, builder allows options. 
+                         So it's Multi-Checkbox. formData[field.label] should be array.
+                    -->
+                  <div class="space-y-2 pt-1">
+                    <div v-for="(opt, oIdx) in field.options" :key="oIdx" class="flex items-center gap-2">
+                      <input type="checkbox" :id="`field-${index}-${oIdx}`" :value="opt.value"
+                        v-model="formData[field.label]"
+                        class="text-primary focus:ring-primary h-4 w-4 border-gray-300 rounded"
+                        :style="{ accentColor: 'var(--primary-color)' }" />
+                      <label :for="`field-${index}-${oIdx}`" class="text-sm opacity-90 cursor-pointer"
+                        :style="{ color: 'var(--text-color)' }">{{ opt.label }}</label>
+                    </div>
+                  </div>
+                </template>
+
                 <template v-else>
-                  <Input :id="`field-${index}`" :type="field.type" v-model="formData[field.label]" class="custom-input"
-                    :placeholder="field.placeholder" :required="field.required" />
+                  <Input :id="`field-${index}`" :type="field.type" v-model="formData[field.label]"
+                    class="custom-input bg-transparent" :data-style="inputStyleMode" :placeholder="field.placeholder"
+                    :required="field.required" />
                 </template>
               </div>
             </div>
           </transition>
 
-          <div class="pt-4 flex items-center gap-3">
+          <div class="pt-4 flex items-center gap-3" :class="[currentStep > 0 ? '' : btnAlignClass]">
             <button v-if="currentStep > 0" type="button" @click="prevStep"
               class="px-6 py-2.5 rounded text-sm font-medium border border-black/10 hover:bg-black/5 transition-colors"
               style="border-radius: var(--btn-radius)">
@@ -298,24 +374,20 @@ const handleSubmit = async () => {
             </button>
 
             <button v-if="currentStep < steps.length - 1" type="button" @click="nextStep"
-              class="flex-1 px-6 py-2.5 rounded text-sm font-medium text-white shadow-md hover:opacity-90 transition-opacity"
+              class="px-6 py-2.5 rounded text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              :class="[btnAlignClass === 'btn-align-block' ? 'w-full flex-1' : '']"
               style="background-color: var(--primary-color); border-radius: var(--btn-radius)">
               Próximo
             </button>
 
             <button v-else type="submit"
-              class="flex-1 px-6 py-2.5 rounded text-sm font-medium text-white shadow-md hover:opacity-90 transition-opacity"
+              class="px-6 py-2.5 rounded text-sm font-medium text-white hover:opacity-90 transition-opacity"
+              :class="[btnAlignClass === 'btn-align-block' ? 'w-full flex-1' : '']"
               style="background-color: var(--primary-color); border-radius: var(--btn-radius)">
               Enviar
             </button>
           </div>
         </form>
-      </div>
-
-      <!-- Footer -->
-      <div
-        class="px-6 py-4 bg-black/5 border-t border-black/5 text-center text-[10px] uppercase tracking-widest opacity-40 font-custom">
-        Secured by SimpleCRM
       </div>
     </div>
 
@@ -333,25 +405,72 @@ const handleSubmit = async () => {
   background-color: var(--bg-color);
   border-radius: var(--radius);
   color: var(--text-color);
-}
+  /* New properties */
+  padding: var(--card-padding);
+  border: var(--border-width) solid var(--border-color);
 
-.font-custom {
-  font-family: var(--font-family, sans-serif);
+  /* Shadow handling */
+  box-shadow: var(--shadow);
 }
 
 .custom-input {
-  /* We want to inherit global styling but keep structure */
-  background-color: rgba(255, 255, 255, 0.05);
-  /* Slight tint */
-  border-color: rgba(0, 0, 0, 0.1);
+  /* Common base */
+  border-radius: var(--input-radius) !important;
+  color: #000000;
+  transition: all 0.2s;
 }
 
-/* Light/Dark adaption helper */
-@media (prefers-color-scheme: dark) {
-  .custom-input {
-    border-color: rgba(255, 255, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.2);
-  }
+/* INPUT STYLES */
+/* Solid (Default) */
+.custom-input[data-style="solid"] {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+/* Outline */
+.custom-input[data-style="outline"] {
+  background-color: transparent;
+  border: 1px solid var(--text-color);
+  /* Use text color for border in outline */
+  color: var(--text-color);
+}
+
+.custom-input[data-style="outline"]::placeholder {
+  color: var(--text-color);
+  opacity: 0.5;
+}
+
+/* Underline */
+.custom-input[data-style="underline"] {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--text-color);
+  border-radius: 0 !important;
+  padding-left: 0;
+}
+
+.custom-input[data-style="underline"]:focus {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--primary-color);
+  box-shadow: none;
+}
+
+
+/* BUTTON ALIGNMENT classes helper */
+.btn-align-left {
+  justify-content: flex-start;
+}
+
+.btn-align-center {
+  justify-content: center;
+}
+
+.btn-align-right {
+  justify-content: flex-end;
+}
+
+.btn-align-block {
+  width: 100%;
 }
 
 .fade-enter-active,
